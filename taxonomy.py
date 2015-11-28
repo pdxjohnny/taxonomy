@@ -25,6 +25,8 @@ def define(word):
 def defineAll(fileObj, callback):
     for line in fileObj:
         for word in line.split():
+            word = word.lower()
+            word = noPuncuation(word)
             results = define(word)
             if len(results) > 1:
                 allDefinitions = []

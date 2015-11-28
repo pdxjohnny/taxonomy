@@ -1,13 +1,10 @@
 import os
 import sys
-import pymongo
 
-client = pymongo.MongoClient('mongodb://localhost:27017/')
-db = client['word-database']
-worddb = db['word-collection']
+import mongo
 
 def main():
-    for word in worddb.find():
+    for word in mongo.coll.find():
         if not 'count' in word:
             continue
         print word['_id'], word['count']

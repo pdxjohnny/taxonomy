@@ -11,6 +11,7 @@ def wordFile(word, definition):
     }
     try:
         mongo.coll.insert_one(insert)
+        print 'Imported', word
     except Exception as e:
         print e 
 
