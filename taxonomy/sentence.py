@@ -8,6 +8,7 @@ colorama.init()
 import taxonomy
 import mongo
 import args
+import most_used_words
 
 try:
     inp = raw_input
@@ -82,10 +83,15 @@ def graphSentencePartsOfSpeech(sentences):
     fileName = chart.title.lower().replace(' ', '_')
     chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
-def graphSentenceWorduse(sentences):
+def graphSentenceWordUse(sentences, top=0, fileName=args.args.file):
     num = len(sentences) + 1
     chart = pygal.StackedBar(print_labels=True, show_legend=False)
     chart.title = 'Word Use By Sentence'
+    if top > 0:
+        chart.title += ' Of Top ' + str(top) + ' Words'
+        mostUsed = most_used_words.mostUsed(fileName, top=top)
+        mostUsed = {word['label']: word['value'] \
+            for word in mostUsed}
     chart.x_labels = map(str, range(1, num))
     sentencesByWord = [[taxonomy.sanitize(word) for word in sentence.split()] \
         for sentence in sentences]
@@ -102,8 +108,10 @@ def graphSentenceWorduse(sentences):
         for word in wordCounts[i]:
             if not word in perWord:
                 perWord[word] = []
-            if wordCounts[i][word]['value'] < 1:
+            if wordCounts[i][word]['value'] < 1 or \
+                (top > 0 and not word in mostUsed):
                 wordCounts[i][word]['label'] = ''
+                wordCounts[i][word]['value'] = 0
             perWord[word].append(wordCounts[i][word])
     for word in perWord:
         chart.add(word, perWord[word])
@@ -126,7 +134,8 @@ def main():
     num = 1
     sentences = [sentence.strip() for sentence in allLines.split('.')]
     graphSentenceLength(sentences)
-    graphSentenceWorduse(sentences)
+    graphSentenceWordUse(sentences)
+    graphSentenceWordUse(sentences, top=5)
     for sentence in sentences:
         if len(sentence) > 0:
             alreadyDone = taxonomy.word(num)
