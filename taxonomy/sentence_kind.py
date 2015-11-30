@@ -59,30 +59,28 @@ def graphSentenceClauses(sentences):
             else:
                 sentence[clause] = {'value': sentence[clause], 'label': ''}
             allClauses[clause].append(sentence[clause])
-    for part in allClauses:
-        chart.add(part, allClauses[part])
+    for clause in allClauses:
+        chart.add(clause, allClauses[clause])
     fileName = chart.title.lower().replace(' ', '_')
     chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
 def graphSentenceKinds(sentences):
     num = len(sentences) + 1
-    chart = pygal.StackedBar(print_labels=True)
+    chart = pygal.Bar()
     chart.title = 'Kinds Of Sentences'
     chart.x_labels = map(str, range(1, num))
-    allParts = {part: [] for part in taxonomy.TYPES}
+    allKinds = {kind: [] for kind in SENTENCE_KINDS}
     for i in xrange(1, num):
         sentence = taxonomy.word(i)
-        counts = {part: 0 for part in taxonomy.TYPES}
-        for wordType in sentence['types']:
-            counts[wordType] += 1
-        for part in counts:
-            if counts[part] != 0:
-                counts[part] = {'value': counts[part], 'label': str(counts[part])}
+        for kind in SENTENCE_KINDS:
+            if sentence['dependent'] == SENTENCE_KINDS[kind]['dependent'] and \
+                sentence['independent'] == SENTENCE_KINDS[kind]['independent']:
+                sentenceKind = {'value': 1, 'label': kind}
             else:
-                counts[part] = {'value': counts[part], 'label': ''}
-            allParts[part].append(counts[part])
-    for part in allParts:
-        chart.add(part, allParts[part])
+                sentenceKind = {'value': 0, 'label': ''}
+            allKinds[kind].append(sentenceKind)
+    for kind in allKinds:
+        chart.add(kind, allKinds[kind])
     fileName = chart.title.lower().replace(' ', '_')
     chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
@@ -99,7 +97,7 @@ def main():
                 handleSentence(sentence, num)
             num += 1
     graphSentenceClauses(sentences)
-    # graphSentenceKinds(sentences)
+    graphSentenceKinds(sentences)
 
 if __name__ == '__main__':
     main()
