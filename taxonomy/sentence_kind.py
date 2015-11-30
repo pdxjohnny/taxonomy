@@ -19,19 +19,12 @@ CLAUSE_KINDS = [
     'dependent'
 ]
 
-SENTENCE_KINDS = [
-    'simple',
-    'compound',
-    'complex',
-    'compound-complex'
-]
-
-SENTENCE_TYPES = [
-    'simple',
-    'compound',
-    'complex',
-    'compound-complex'
-]
+SENTENCE_KINDS = {
+    'simple': {'independent': 1, 'dependent': 0},
+    'compound': {'independent': 2, 'dependent': 0},
+    'complex': {'independent': 1, 'dependent': 1},
+    'compound-complex': {'independent': 2, 'dependent': 1}
+}
 
 try:
     inp = raw_input
@@ -51,6 +44,25 @@ def handleSentence(sentence, num):
         mongo.coll.update_one({'_id': num}, {'$set': {clause: numOfClause}}, \
             upsert=False)
         print ''
+
+def graphSentenceClauses(sentences):
+    num = len(sentences) + 1
+    chart = pygal.StackedBar(print_labels=True)
+    chart.title = 'Sentence Clauses'
+    chart.x_labels = map(str, range(1, num))
+    allClauses = {clause: [] for clause in CLAUSE_KINDS}
+    for i in xrange(1, num):
+        sentence = taxonomy.word(i)
+        for clause in CLAUSE_KINDS:
+            if sentence[clause] != 0:
+                sentence[clause] = {'value': sentence[clause], 'label': str(sentence[clause])}
+            else:
+                sentence[clause] = {'value': sentence[clause], 'label': ''}
+            allClauses[clause].append(sentence[clause])
+    for part in allClauses:
+        chart.add(part, allClauses[part])
+    fileName = chart.title.lower().replace(' ', '_')
+    chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
 def graphSentenceKinds(sentences):
     num = len(sentences) + 1
@@ -86,8 +98,8 @@ def main():
                 not 'dependent' in alreadyDone:
                 handleSentence(sentence, num)
             num += 1
+    graphSentenceClauses(sentences)
     # graphSentenceKinds(sentences)
-    # graphSentenceTypes(sentences)
 
 if __name__ == '__main__':
     main()
