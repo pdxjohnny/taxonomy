@@ -1,5 +1,6 @@
 import os
 import sys
+import pygal
 import colorama
 colorama.init()
 
@@ -58,15 +59,38 @@ def handleSentence(sentence, num):
         print e
         time.sleep(1)
 
+def graphSentences(sentences):
+    num = len(sentences) + 1
+    chart = pygal.StackedBar(print_labels=True)
+    chart.title = 'Parts of Speech In Sentences'
+    chart.x_labels = map(str, range(1, num))
+    allParts = {part: [] for part in taxonomy.TYPES}
+    for i in xrange(1, num):
+        sentence = taxonomy.word(i)
+        counts = {part: 0 for part in taxonomy.TYPES}
+        for wordType in sentence['types']:
+            counts[wordType] += 1
+        for part in counts:
+            if counts[part] != 0:
+                counts[part] = {'value': counts[part], 'label': str(counts[part])}
+            else:
+                counts[part] = {'value': counts[part], 'label': ''}
+            allParts[part].append(counts[part])
+    for part in allParts:
+        chart.add(part, allParts[part])
+    chart.render_to_png(taxonomy.outdir('parts_of_speech_in_sentences.png'))
+
 def main():
     allLines = taxonomy.readFile(args.args.file)
     num = 1
-    for sentence in allLines.split('.'):
+    sentences = [sentence.strip() for sentence in allLines.split('.')]
+    for sentence in sentences:
         if len(sentence) > 0:
             alreadyDone = taxonomy.word(num)
             if alreadyDone == None:
-                handleSentence(sentence.strip(), num)
+                handleSentence(sentence, num)
             num += 1
+    graphSentences(sentences)
 
 if __name__ == '__main__':
     main()
