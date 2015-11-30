@@ -84,7 +84,7 @@ def graphSentencePartsOfSpeech(sentences):
 
 def graphSentenceWorduse(sentences):
     num = len(sentences) + 1
-    chart = pygal.StackedBar(print_labels=True)
+    chart = pygal.StackedBar(print_labels=True, show_legend=False)
     chart.title = 'Word Use By Sentence'
     chart.x_labels = map(str, range(1, num))
     sentencesByWord = [[taxonomy.sanitize(word) for word in sentence.split()] \
@@ -115,7 +115,9 @@ def graphSentenceLength(sentences):
     chart.title = 'Sentence Length'
     for i in xrange(1, len(sentences) + 1):
         senLen = len(sentences[i - 1].split())
-        chart.add(str(i) + ' - ' + str(senLen) + ' words', senLen)
+        title = str(i) + ' - ' + str(senLen) + ' words'
+        senLen = {'value': senLen, 'label': str(senLen)}
+        chart.add(title, [senLen])
     fileName = chart.title.lower().replace(' ', '_')
     chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
