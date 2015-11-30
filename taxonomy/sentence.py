@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import pygal
 import colorama
 colorama.init()
@@ -78,21 +79,52 @@ def graphSentencePartsOfSpeech(sentences):
             allParts[part].append(counts[part])
     for part in allParts:
         chart.add(part, allParts[part])
-    chart.render_to_png(taxonomy.outdir('parts_of_speech_in_sentences.png'))
+    fileName = chart.title.lower().replace(' ', '_')
+    chart.render_to_png(taxonomy.outdir(fileName + '.png'))
+
+def graphSentenceWorduse(sentences):
+    num = len(sentences) + 1
+    chart = pygal.StackedBar(print_labels=True)
+    chart.title = 'Word Use By Sentence'
+    chart.x_labels = map(str, range(1, num))
+    sentencesByWord = [[taxonomy.sanitize(word) for word in sentence.split()] \
+        for sentence in sentences]
+    allWords = {}
+    for sentence in sentencesByWord:
+        for word in sentence:
+            allWords[word] = {'label': word, 'value': 0}
+    wordCounts = [copy.deepcopy(allWords) for sentence in sentencesByWord]
+    for i in xrange(0, len(sentencesByWord)):
+        for word in sentencesByWord[i]:
+            wordCounts[i][word]['value'] += 1
+    perWord = {}
+    for i in xrange(0, len(wordCounts)):
+        for word in wordCounts[i]:
+            if not word in perWord:
+                perWord[word] = []
+            if wordCounts[i][word]['value'] < 1:
+                wordCounts[i][word]['label'] = ''
+            perWord[word].append(wordCounts[i][word])
+    for word in perWord:
+        chart.add(word, perWord[word])
+    fileName = chart.title.lower().replace(' ', '_')
+    chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
 def graphSentenceLength(sentences):
-    chart = pygal.Pie(print_labels=True, print_values=True)
+    chart = pygal.Pie(print_labels=True)
     chart.title = 'Sentence Length'
     for i in xrange(1, len(sentences) + 1):
         senLen = len(sentences[i - 1].split())
         chart.add(str(i) + ' - ' + str(senLen) + ' words', senLen)
-    chart.render_to_png(taxonomy.outdir('sentence_length.png'))
+    fileName = chart.title.lower().replace(' ', '_')
+    chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
 def main():
     allLines = taxonomy.readFile(args.args.file)
     num = 1
     sentences = [sentence.strip() for sentence in allLines.split('.')]
     graphSentenceLength(sentences)
+    graphSentenceWorduse(sentences)
     for sentence in sentences:
         if len(sentence) > 0:
             alreadyDone = taxonomy.word(num)

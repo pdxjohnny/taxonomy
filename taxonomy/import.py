@@ -15,10 +15,6 @@ def wordFile(word, definition):
         print 'Imported', word
     except Exception as e:
         print e 
-    try:
-        mongo.coll.update_one({'_id': word}, {'$inc': {'count': 1}})
-    except Exception as e:
-        print e 
 
 def main():
     fileHandle = open(args.args.file, 'rb')

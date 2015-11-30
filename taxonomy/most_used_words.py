@@ -6,18 +6,24 @@ import taxonomy
 import mongo
 import args
 
-
 def main():
-    allWords = sorted(mongo.coll.find(), key=lambda x: x['count'], reverse=True)
+    fileData = taxonomy.readFile(args.args.file)
+    section = [taxonomy.sanitize(word) for word in fileData.split()]
+    wordCounts = {word: 0 for word in section}
+    for word in section:
+        wordCounts[word] += 1
+    allWords = [{'label': word, 'value': wordCounts[word]} \
+        for word in wordCounts]
+    allWords = sorted(allWords, key=lambda x: x['value'], reverse=True)
     topWords = allWords[:10]
-    print len(topWords)
-    chart = pygal.HorizontalBar()
+    chart = pygal.Pie(print_labels=True)
     chart.title = 'Most Used Words'
-    chart.x_labels = map(str, range(topWords[0]['count'], topWords[-1]['count']))
     for word in topWords:
-        print word['_id'], word['count']
-        chart.add(word['_id'], word['count'])
-    chart.render_to_png(taxonomy.outdir('most_used_words.png'))
+        title = word['label']
+        word['label'] += ' - ' + str(word['value'])
+        chart.add(title, [word])
+    fileName = chart.title.lower().replace(' ', '_')
+    chart.render_to_png(taxonomy.outdir(fileName + '.png'))
 
 if __name__ == '__main__':
     main()
