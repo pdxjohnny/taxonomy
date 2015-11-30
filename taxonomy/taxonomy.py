@@ -6,6 +6,18 @@ import xml.etree.ElementTree as ET
 import args
 import mongo
 
+TYPES = [
+    'noun',
+    'verb',
+    'pronoun',
+    'adjective',
+    'adverb',
+    'preposition',
+    'conjunction',
+    'interjection',
+    'determinate'
+]
+
 def word(string):
     return mongo.coll.find_one({"_id": string})
 
@@ -46,12 +58,14 @@ def define(word):
 
 def defineAll(fileObj, callback):
     for line in fileObj:
-        for word in line.split():
-            word = sanitize(word)
-            results = define(word)
-            if len(results) > 1:
-                allDefinitions = []
-                for definition in list(results[1]):
-                    if len(definition) > 2:
-                        allDefinitions.append(definition[2].text)
-                callback(word, '\n'.join(allDefinitions))
+        for newWord in line.split():
+            newWord = sanitize(newWord)
+            info = word(newWord)
+            if info == None:
+                results = define(newWord)
+                if len(results) > 1:
+                    allDefinitions = []
+                    for definition in list(results[1]):
+                        if len(definition) > 2:
+                            allDefinitions.append(definition[2].text)
+                    callback(newWord, '\n'.join(allDefinitions))

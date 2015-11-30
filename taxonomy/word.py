@@ -5,14 +5,15 @@ import taxonomy
 import args
 
 def main():
-    info = taxonomy.word(taxonomy.sanitize(args.args.word))
-    definition = info['definition']
-    del info['definition']
-    print info['_id']
+    info = taxonomy.word(args.args.word)
+    if 'definition' in info:
+        definition = info['definition']
+        del info['definition']
+        print definition
+        print ''
     print info
     print ''
-    print definition
-    print ''
+    print info['_id']
 
 if __name__ == '__main__':
     main()
