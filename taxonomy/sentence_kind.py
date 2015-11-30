@@ -66,7 +66,7 @@ def graphSentenceClauses(sentences):
 
 def graphSentenceKinds(sentences):
     num = len(sentences) + 1
-    chart = pygal.Bar()
+    chart = pygal.StackedBar()
     chart.title = 'Kinds Of Sentences'
     chart.x_labels = map(str, range(1, num))
     allKinds = {kind: [] for kind in SENTENCE_KINDS}
