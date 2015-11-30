@@ -59,7 +59,7 @@ def handleSentence(sentence, num):
         print e
         time.sleep(1)
 
-def graphSentences(sentences):
+def graphSentencePartsOfSpeech(sentences):
     num = len(sentences) + 1
     chart = pygal.StackedBar(print_labels=True)
     chart.title = 'Parts of Speech In Sentences'
@@ -80,17 +80,26 @@ def graphSentences(sentences):
         chart.add(part, allParts[part])
     chart.render_to_png(taxonomy.outdir('parts_of_speech_in_sentences.png'))
 
+def graphSentenceLength(sentences):
+    chart = pygal.Pie(print_labels=True, print_values=True)
+    chart.title = 'Sentence Length'
+    for i in xrange(1, len(sentences) + 1):
+        senLen = len(sentences[i - 1].split())
+        chart.add(str(i) + ' - ' + str(senLen) + ' words', senLen)
+    chart.render_to_png(taxonomy.outdir('sentence_length.png'))
+
 def main():
     allLines = taxonomy.readFile(args.args.file)
     num = 1
     sentences = [sentence.strip() for sentence in allLines.split('.')]
+    graphSentenceLength(sentences)
     for sentence in sentences:
         if len(sentence) > 0:
             alreadyDone = taxonomy.word(num)
             if alreadyDone == None:
                 handleSentence(sentence, num)
             num += 1
-    graphSentences(sentences)
+    graphSentencePartsOfSpeech(sentences)
 
 if __name__ == '__main__':
     main()
