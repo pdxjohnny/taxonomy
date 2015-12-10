@@ -1,5 +1,5 @@
 # taxonomy
-For doing a taxonomy of a text (for an English class or something)
+For doing a taxonomy of a text
 
 Requirements
 ---
